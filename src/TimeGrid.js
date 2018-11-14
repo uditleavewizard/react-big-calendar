@@ -41,6 +41,9 @@ export default class TimeGrid extends Component {
     selectable: PropTypes.oneOf([true, false, 'ignoreEvents']),
     longPressThreshold: PropTypes.number,
 
+    showTimeGridHeaderOnly: PropTypes.bool,
+    hideTimeGutter: PropTypes.bool,
+
     onNavigate: PropTypes.func,
     onSelectSlot: PropTypes.func,
     onSelectEnd: PropTypes.func,
@@ -57,6 +60,7 @@ export default class TimeGrid extends Component {
     min: dates.startOf(new Date(), 'day'),
     max: dates.endOf(new Date(), 'day'),
     scrollToTime: dates.startOf(new Date(), 'day'),
+    showOnlyAllDayEvents: false,
   }
 
   constructor(props) {
@@ -82,7 +86,9 @@ export default class TimeGrid extends Component {
 
     this.applyScroll()
 
-    window.addEventListener('resize', this.handleResize)
+    if (!this.props.showTimeGridHeaderOnly) {
+      window.addEventListener('resize', this.handleResize)
+    }
   }
 
   handleScroll = e => {
@@ -95,9 +101,11 @@ export default class TimeGrid extends Component {
     raf.cancel(this.rafHandle)
     this.rafHandle = raf(this.checkOverflow)
   }
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.handleResize)
 
+  componentWillUnmount() {
+    if (!this.props.showTimeGridHeaderOnly) {
+      window.removeEventListener('resize', this.handleResize)
+    }
     raf.cancel(this.rafHandle)
   }
 
@@ -191,6 +199,8 @@ export default class TimeGrid extends Component {
       max,
       showMultiDayTimes,
       longPressThreshold,
+      hideTimeGutter,
+      showTimeGridHeaderOnly,
     } = this.props
 
     width = width || this.state.gutterWidth
@@ -224,7 +234,11 @@ export default class TimeGrid extends Component {
 
     return (
       <div
-        className={cn('rbc-time-view', resources && 'rbc-time-view-resources')}
+        className={cn(
+          'rbc-time-view',
+          resources && 'rbc-time-view-resources',
+          showTimeGridHeaderOnly && 'time-grid-header-only'
+        )}
       >
         <TimeGridHeader
           range={range}
@@ -246,26 +260,31 @@ export default class TimeGrid extends Component {
           onDoubleClickEvent={this.props.onDoubleClickEvent}
           onDrillDown={this.props.onDrillDown}
           getDrilldownView={this.props.getDrilldownView}
+          hideTimeGutterHeader={showTimeGridHeaderOnly || hideTimeGutter}
         />
-        <div
-          ref="content"
-          className="rbc-time-content"
-          onScroll={this.handleScroll}
-        >
-          <TimeGutter
-            date={start}
-            ref={this.gutterRef}
-            localizer={localizer}
-            min={dates.merge(start, min)}
-            max={dates.merge(start, max)}
-            step={this.props.step}
-            getNow={this.props.getNow}
-            timeslots={this.props.timeslots}
-            components={components}
-            className="rbc-time-gutter"
-          />
-          {this.renderEvents(range, rangeEvents, getNow())}
-        </div>
+        {!showTimeGridHeaderOnly && (
+          <div
+            ref="content"
+            className="rbc-time-content"
+            onScroll={this.handleScroll}
+          >
+            {!hideTimeGutter && (
+              <TimeGutter
+                date={start}
+                ref={this.gutterRef}
+                localizer={localizer}
+                min={dates.merge(start, min)}
+                max={dates.merge(start, max)}
+                step={this.props.step}
+                getNow={this.props.getNow}
+                timeslots={this.props.timeslots}
+                components={components}
+                className="rbc-time-gutter"
+              />
+            )}
+            {this.renderEvents(range, rangeEvents, getNow())}
+          </div>
+        )}
       </div>
     )
   }
@@ -276,19 +295,23 @@ export default class TimeGrid extends Component {
   }
 
   measureGutter() {
-    const width = getWidth(this.gutter)
+    if (!this.props.showTimeGridHeaderOnly && !this.props.hideTimeGutter) {
+      const width = getWidth(this.gutter)
 
-    if (width && this.state.gutterWidth !== width) {
-      this.setState({ gutterWidth: width })
+      if (width && this.state.gutterWidth !== width) {
+        this.setState({ gutterWidth: width })
+      }
     }
   }
 
   applyScroll() {
-    if (this._scrollRatio) {
-      const { content } = this.refs
-      content.scrollTop = content.scrollHeight * this._scrollRatio
-      // Only do this once
-      this._scrollRatio = null
+    if (!this.props.showOnlyAllDayEvents) {
+      if (this._scrollRatio) {
+        const { content } = this.refs
+        content.scrollTop = content.scrollHeight * this._scrollRatio
+        // Only do this once
+        this._scrollRatio = null
+      }
     }
   }
 
@@ -302,16 +325,18 @@ export default class TimeGrid extends Component {
   }
 
   checkOverflow = () => {
-    if (this._updatingOverflow) return
+    if (!this.props.showTimeGridHeaderOnly) {
+      if (this._updatingOverflow) return
 
-    let isOverflowing =
-      this.refs.content.scrollHeight > this.refs.content.clientHeight
+      let isOverflowing =
+        this.refs.content.scrollHeight > this.refs.content.clientHeight
 
-    if (this.state.isOverflowing !== isOverflowing) {
-      this._updatingOverflow = true
-      this.setState({ isOverflowing }, () => {
-        this._updatingOverflow = false
-      })
+      if (this.state.isOverflowing !== isOverflowing) {
+        this._updatingOverflow = true
+        this.setState({ isOverflowing }, () => {
+          this._updatingOverflow = false
+        })
+      }
     }
   }
 }

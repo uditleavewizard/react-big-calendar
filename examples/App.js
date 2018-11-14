@@ -25,6 +25,7 @@ import Resource from './demos/resource'
 import DndResource from './demos/dndresource'
 import Timeslots from './demos/timeslots'
 import Dnd from './demos/dnd'
+import ShowTimeHeaderOnly from './demos/showTimeHeaderOnly'
 import Dropdown from 'react-bootstrap/lib/Dropdown'
 import MenuItem from 'react-bootstrap/lib/MenuItem'
 
@@ -35,6 +36,7 @@ let demoRoot =
 
 const EXAMPLES = {
   basic: 'Basic Calendar',
+  showTimeHeaderOnly: 'Show time header only',
   selectable: 'Create events',
   cultures: 'Localization',
   popup: 'Show more via a popup',
@@ -69,6 +71,7 @@ class Example extends React.Component {
     let selected = this.state.selected
     let Current = {
       basic: Basic,
+      showTimeHeaderOnly: ShowTimeHeaderOnly,
       selectable: Selectable,
       cultures: Cultures,
       popup: Popup,

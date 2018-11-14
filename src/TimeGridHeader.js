@@ -34,6 +34,8 @@ class TimeGridHeader extends React.Component {
     onDrillDown: PropTypes.func,
     getDrilldownView: PropTypes.func.isRequired,
     scrollRef: PropTypes.any,
+
+    hideTimeGutterHeader: PropTypes.bool,
   }
 
   handleHeaderClick = (date, view, e) => {
@@ -144,6 +146,7 @@ class TimeGridHeader extends React.Component {
       localizer,
       isOverflowing,
       components: { timeGutterHeader: TimeGutterHeader },
+      hideTimeGutterHeader,
     } = this.props
 
     let style = {}
@@ -159,12 +162,14 @@ class TimeGridHeader extends React.Component {
         ref={scrollRef}
         className={cn('rbc-time-header', isOverflowing && 'rbc-overflowing')}
       >
-        <div
-          className="rbc-label rbc-time-header-gutter"
-          style={{ width, minWidth: width, maxWidth: width }}
-        >
-          {TimeGutterHeader && <TimeGutterHeader />}
-        </div>
+        {!hideTimeGutterHeader && (
+          <div
+            className="rbc-label rbc-time-header-gutter"
+            style={{ width, minWidth: width, maxWidth: width }}
+          >
+            {TimeGutterHeader && <TimeGutterHeader />}
+          </div>
+        )}
 
         {resources.map(([id, resource], idx) => (
           <div className="rbc-time-header-content" key={id || idx}>

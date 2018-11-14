@@ -445,6 +445,16 @@ class Calendar extends React.Component {
     longPressThreshold: PropTypes.number,
 
     /**
+     * Hides the time gutter, time slots and display only the time grid header.
+     */
+    showTimeGridHeaderOnly: PropTypes.bool,
+
+    /**
+     * Hides the gutter on the left that shows the time intervals on views where the gutter is shown.
+     */
+    hideTimeGutter: PropTypes.bool,
+
+    /**
      * Determines the selectable time increments in week and day views
      */
     step: PropTypes.number,
@@ -481,7 +491,7 @@ class Calendar extends React.Component {
      * position may break the calendar in unexpected ways.
      *
      * ```js
-     * (date: Date, resourceId: (number|string)) => { className?: string, style?: Object }
+     * (date: Date) => { className?: string, style?: Object }
      * ```
      */
     slotPropGetter: PropTypes.func,
@@ -736,6 +746,9 @@ class Calendar extends React.Component {
 
     longPressThreshold: 250,
     getNow: () => new Date(),
+
+    showTimeGridHeaderOnly: false,
+    hideTimeGutter: false,
   }
 
   constructor(...args) {
